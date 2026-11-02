@@ -71,13 +71,27 @@ Run the tests with `python manage.py test` in `backend/`.
 
 ## Screenshots
 
-| Student dashboard | Speaking test | Results |
-|---|---|---|
-| ![Student dashboard](docs/screenshots/student-dashboard.png) | ![Speaking test](docs/screenshots/speaking-test.png) | ![Results](docs/screenshots/results.png) |
+> Sample students and demo-mode scores.
 
-| Admin dashboard | Answer review | Reports |
+### Students
+
+| Dashboard | Before the test | Results |
 |---|---|---|
-| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Review](docs/screenshots/review.png) | ![Reports](docs/screenshots/reports.png) |
+| ![Student dashboard](docs/screenshots/student-dashboard.png) | ![Before the test](docs/screenshots/speaking-test.png) | ![Results](docs/screenshots/results.png) |
+| **My progress** | **Quick practice** | **Mistakes notebook** |
+| ![My progress](docs/screenshots/progress.png) | ![Quick practice](docs/screenshots/practice.png) | ![Mistakes notebook](docs/screenshots/notebook.png) |
+
+### Teachers
+
+| Dashboard | Answer review | Reports |
+|---|---|---|
+| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Answer review](docs/screenshots/review.png) | ![Reports](docs/screenshots/reports.png) |
+| **AI generator** | **Questions** | **Students** |
+| ![AI generator](docs/screenshots/ai-generator.png) | ![Questions](docs/screenshots/questions.png) | ![Students](docs/screenshots/students.png) |
+
+### Phone
+
+<img src="docs/screenshots/mobile.png" alt="Student dashboard on a phone" width="260">
 
 ---
 
