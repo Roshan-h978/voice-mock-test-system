@@ -3,6 +3,8 @@
 Email and password come from DEFAULT_ADMIN_EMAIL / DEFAULT_ADMIN_PASSWORD in backend/.env
 (default admin@example.com / admin123). Nothing is created if an admin already exists.
 Change the password after the first sign-in (Profile > Change password).
+On a live server (DJANGO_DEBUG=False) the public default password admin123 is never used:
+set DEFAULT_ADMIN_PASSWORD in backend/.env, or run "python manage.py create_admin".
 """
 
 from django.conf import settings
@@ -13,6 +15,8 @@ from django.db import migrations
 def create_default_admin(apps, schema_editor):
     if getattr(settings, "TESTING", False):
         return  # test databases start empty
+    if not settings.DEBUG and settings.DEFAULT_ADMIN_PASSWORD == "admin123":
+        return  # everyone can read admin123 in the README, so it must not open a live server
     User = apps.get_model("accounts", "User")
     if User.objects.filter(role="admin").exists() or User.objects.filter(is_superuser=True).exists():
         return

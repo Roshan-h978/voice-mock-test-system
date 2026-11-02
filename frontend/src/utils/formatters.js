@@ -115,3 +115,10 @@ export function timeAgo(value) {
   if (days < 7) return `${days} days ago`;
   return formatDate(date);
 }
+
+const AUDIO_EXTENSIONS = { 'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/mpeg': 'mp3', 'audio/wav': 'wav' };
+
+/** File name for an uploaded recording, e.g. audioFileName('answer', 'audio/webm;codecs=opus') -> 'answer.webm'. */
+export function audioFileName(base, mimeType = '') {
+  return `${base}.${AUDIO_EXTENSIONS[mimeType.split(';')[0].trim()] || 'webm'}`;
+}

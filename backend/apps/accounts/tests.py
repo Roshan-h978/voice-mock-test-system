@@ -468,9 +468,9 @@ class GoogleSignInTests(AccountTestCase):
 
 
 class DefaultAdminTests(AccountTestCase):
-    def run_migration_function(self):
+    def run_migration_function(self, debug=True):
         migration = importlib.import_module("apps.accounts.migrations.0003_create_default_admin")
-        with override_settings(TESTING=False):
+        with override_settings(TESTING=False, DEBUG=debug):
             migration.create_default_admin(django_apps, None)
 
     def test_first_admin_is_created_once_with_admin123(self):
@@ -493,6 +493,14 @@ class DefaultAdminTests(AccountTestCase):
         )
         admin.refresh_from_db()
         self.assertFalse(admin.uses_default_password)
+
+    def test_no_admin123_account_on_a_live_server(self):
+        self.run_migration_function(debug=False)
+        self.assertFalse(User.objects.filter(email="admin@example.com").exists())
+
+        with override_settings(DEFAULT_ADMIN_PASSWORD="A-Real-Admin-Pass-2026"):
+            self.run_migration_function(debug=False)
+        self.assertTrue(User.objects.get(email="admin@example.com").check_password("A-Real-Admin-Pass-2026"))
 
     def test_no_default_admin_when_an_admin_exists(self):
         make_user("nisha@example.com", role=User.Role.ADMIN)

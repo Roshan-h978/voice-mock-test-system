@@ -1,12 +1,7 @@
 // Quick practice, the Mistakes notebook and My progress.
 
+import { audioFileName } from '../utils/formatters';
 import api from './api';
-
-const EXTENSIONS = { 'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/mpeg': 'mp3', 'audio/wav': 'wav' };
-
-function fileNameFor(mimeType = '') {
-  return `practice.${EXTENSIONS[mimeType.split(';')[0].trim()] || 'webm'}`;
-}
 
 // ---- Quick practice ------------------------------------------------------
 export async function getPracticeTopics() {
@@ -23,7 +18,7 @@ export async function getPracticeQuestion({ source = 'ai', topic = '' } = {}) {
 /** Uploads the recording with its question and returns the scored practice answer. */
 export async function submitPracticeAnswer({ question, blob, durationSeconds }) {
   const form = new FormData();
-  form.append('audio', blob, fileNameFor(blob.type));
+  form.append('audio', blob, audioFileName('practice', blob.type));
   form.append('question_text', question.question_text);
   form.append('hint', question.hint || '');
   form.append('topic', question.topic || '');
