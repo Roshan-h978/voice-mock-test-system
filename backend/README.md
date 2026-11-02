@@ -8,6 +8,7 @@ Needs Python 3.11 or newer (3.14 works). Open PowerShell **in this `backend` fol
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+copy .env.example .env
 python manage.py migrate
 python manage.py seed_demo
 python manage.py runserver
@@ -16,7 +17,7 @@ python manage.py runserver
 - If PowerShell blocks `Activate.ps1`: run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, answer **Y**, activate again.
 - Next time you only need `.\.venv\Scripts\Activate.ps1` and `python manage.py runserver`.
 - Check it works: http://127.0.0.1:8000/api/health/ shows `{"status": "ok", ...}`.
-- The settings file `backend/.env` is already filled in for your computer (SQLite database, demo scoring, emails printed in this window).
+- `backend/.env` holds your settings. The copied defaults work straight away: SQLite database, demo scoring, emails printed in this window. Never commit `.env`.
 
 ## Accounts
 
@@ -25,7 +26,7 @@ python manage.py runserver
 | Admin | admin@example.com | admin123 | `python manage.py migrate` |
 | Demo student | student@example.com | student123 | `python manage.py seed_demo` (development only) |
 
-Change the admin password after the first sign-in: **Profile → Change password** (the dashboard reminds you).
+Change the admin password after the first sign-in: **Profile → Change password** (the dashboard reminds you). On a live server (`DJANGO_DEBUG=False`) the admin is only created when `DEFAULT_ADMIN_PASSWORD` in `backend/.env` is set to something other than `admin123`.
 Lost the admin? `python manage.py create_admin --email you@example.com --password something-new`
 
 Raw data (all tables) is in the Django admin: http://127.0.0.1:8000/admin/ with the admin account.

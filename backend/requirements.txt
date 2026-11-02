@@ -16,6 +16,7 @@ requests>=2.32,<3.0
 
 # ── Sign in with Google (ID token verification) ─────────
 google-auth>=2.40,<3.0
+pyasn1>=0.6.5  # used by google-auth; 0.6.4 and older have denial-of-service bugs
 
 # ── Production server (Linux hosting) ───────────────────
 gunicorn>=23.0,<24.0

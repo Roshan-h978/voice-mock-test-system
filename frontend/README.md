@@ -40,7 +40,7 @@ The shapes (sound rings, waveform bars, score arc) are in `src/components/Shapes
 | --- | --- |
 | `src/pages/common` | Home, sign-in, sign-up, forgot / reset password, privacy, terms, notifications |
 | `src/pages/student` | Dashboard, test instructions, speaking test, results, history, Quick practice, My progress, Mistakes notebook, profile |
-| `src/pages/admin` | Dashboard, students, tests, questions, reviews, reports |
+| `src/pages/admin` | Dashboard, students, tests, questions, AI generator, reviews, reports |
 | `src/components` | Shared pieces: buttons, fields, recorder, Google button, sidebar, dialogs, score ring… |
 | `src/layouts` | Student and admin page frames (sidebar + top bar) |
 | `src/services` | Every API call (axios, automatic token refresh) |
