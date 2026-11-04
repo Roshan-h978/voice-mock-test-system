@@ -1,17 +1,14 @@
 # Voice Mock Test System
 
-A web app for practising spoken English with timed, exam-style speaking tests. Students record their answers in the browser and get a score for **fluency, pronunciation and grammar**, plus short written feedback. Teachers (admins) build the tests, review flagged answers and follow progress with reports.
+Exam-style speaking tests for learners of English. Students record answers in the browser and get scored on **fluency, pronunciation and grammar** with written feedback. Teachers build tests, review flagged answers and track progress.
+
+**Live demo:** https://voice-mock-test-system.vercel.app
 
 ![Landing page](docs/screenshots/landing.png)
 
-**Live demo:** https://voice-mock-test-system.vercel.app (free hosting, so the first visit after a quiet period can take about a minute to wake up)
-
-**Stack:** Django REST Framework · React 19 + Vite · PostgreSQL · Whisper speech-to-text · LLM feedback (Groq free tier or Claude) · Google sign-in
-
----
-
 ## Features
 
+<<<<<<< HEAD
 ### For students
 - **Speaking tests that feel like the real exam.** Each question has thinking time, then a timed recording. Students can listen back and re-record before submitting.
 - **Microphone check** before every test, so a broken mic is caught before the first question.
@@ -39,19 +36,28 @@ A web app for practising spoken English with timed, exam-style speaking tests. S
 - 92 automated backend tests, run on SQLite and PostgreSQL.
 
 ---
+=======
+| Students | Teachers (admins) |
+|---|---|
+| Timed speaking tests with thinking time and re-record | Test builder with levels, timings and publishing |
+| Scores and feedback per answer and per test | AI generator that writes whole tests from a topic |
+| Quick practice on any topic | Review queue for low-score, short or off-topic answers |
+| Progress charts and a mistakes notebook | Dashboard, reports and CSV export |
+| Email or Google sign-in | Invite, manage and suspend accounts |
+>>>>>>> 776593a9bbe0e6c60ed51664fd6e6f19578a673d
 
 ## How scoring works
 
 ```mermaid
 flowchart LR
-    A[Recording in the browser] --> B[Django API]
-    B --> C[Speech-to-text<br/>Whisper on Groq or OpenAI]
-    C --> D[Delivery measurements<br/>pace, filler words,<br/>pauses, clarity]
-    D --> E[Written feedback<br/>gpt-oss on Groq or Claude]
-    E --> F[Scores and feedback<br/>for the student]
-    F -- low score, short answer,<br/>unclear audio, off topic --> G[Teacher review queue]
+    A[Recording] --> B[Speech-to-text<br/>Whisper]
+    B --> C[Delivery measures<br/>pace, pauses, clarity]
+    C --> D[AI examiner<br/>feedback and grammar]
+    D --> E[Scores for the student]
+    E -- flagged --> F[Teacher review]
 ```
 
+<<<<<<< HEAD
 - **Overall score** = 40% fluency + 30% pronunciation + 30% grammar. The weights can be changed in `backend/.env`.
 - **Flagged for review:** an answer is sent to the review queue when its score is under 65%, it's very short, the audio is hard to hear, or it may be off topic.
 - **Free scoring:** with `AI_PROVIDER=groq`, one free Groq key runs both steps (Whisper speech-to-text and the open gpt-oss model for feedback).
@@ -93,73 +99,73 @@ Every page works on phones, with a slide-out menu.
 ![Phone screens](docs/screenshots/mobile.png)
 
 ---
+=======
+Overall score = 40% fluency + 30% pronunciation + 30% grammar (adjustable). Scoring is free with a Groq key, with Gemini as an optional backup. OpenAI + Claude are also supported. **Demo mode** runs everything with sample scores and no keys.
+>>>>>>> 776593a9bbe0e6c60ed51664fd6e6f19578a673d
 
 ## Tech stack
 
-| Part | Technology |
-|---|---|
-| Backend | Python, Django 5.2, Django REST Framework, Simple JWT, django-cors-headers, django-environ |
-| Database | PostgreSQL (local or Supabase); SQLite for quick local runs |
-| Frontend | React 19, Vite 8, React Router 7, Axios, Lucide icons, plain CSS with design tokens |
-| Speech-to-text | Whisper: `whisper-large-v3-turbo` on Groq (free) or OpenAI `whisper-1` |
-| Feedback | `openai/gpt-oss-120b` on Groq (free, with Gemini as a free backup) or Anthropic Claude `claude-haiku-5-5` |
-| Sign-in | Email and password, Google Identity Services |
-| Storage | Local `media/` folder or S3-compatible storage (django-storages) |
-| Email | Django SMTP (for example Gmail) or n8n webhooks |
-| Hosting | Vercel (website), Render (API), Supabase (PostgreSQL database and recording storage) |
+**Backend:** Django 5.2, Django REST Framework, JWT auth, PostgreSQL (SQLite for local runs)
+**Frontend:** React 19, Vite, React Router
+**AI:** Whisper speech-to-text, gpt-oss on Groq, Gemini or Claude for feedback
+**Hosting:** Vercel (web), Render (API), Supabase (database and recordings)
 
----
+## Quick start
 
-## Run it locally
-
-You need **Python 3.11+** and **Node.js 20.19+**. PostgreSQL is optional: without it, the app uses an SQLite file.
-
-**1. Backend** (first terminal):
+Needs **Python 3.11+** and **Node.js 20.19+**.
 
 ```bash
+# Backend
 cd backend
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1        # Windows PowerShell
-# source .venv/bin/activate         # macOS / Linux
+.venv\Scripts\activate             # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-copy .env.example .env              # macOS / Linux: cp .env.example .env
+copy .env.example .env             # macOS/Linux: cp .env.example .env
 python manage.py migrate
 python manage.py seed_demo
 python manage.py runserver
 ```
 
-**2. Frontend** (second terminal):
-
 ```bash
+# Frontend (second terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-**3.** Open **http://localhost:5173**.
+Open http://localhost:5173. Local sign-in: `admin@example.com` / `admin123` (admin) or `student@example.com` / `student123` (student). On a live server the admin password must be set in `backend/.env`.
 
-| Account | Email | Password |
+Run the tests with `python manage.py test` in `backend/`.
+
+## Documentation
+
+- [Backend guide](backend/README.md): PostgreSQL or Supabase, Google sign-in, real AI scoring, email
+- [Frontend guide](frontend/README.md): building and hosting the website
+- [`backend/.env.example`](backend/.env.example): every setting, explained
+
+## Screenshots
+
+> Sample students and demo-mode scores.
+
+### Students
+
+| Dashboard | Before the test | Results |
 |---|---|---|
-| Admin (created by `migrate`) | admin@example.com | admin123 (change it after the first sign-in) |
-| Demo student (created by `seed_demo`) | student@example.com | student123 |
+| ![Student dashboard](docs/screenshots/student-dashboard.png) | ![Before the test](docs/screenshots/speaking-test.png) | ![Results](docs/screenshots/results.png) |
+| **My progress** | **Quick practice** | **Mistakes notebook** |
+| ![My progress](docs/screenshots/progress.png) | ![Quick practice](docs/screenshots/practice.png) | ![Mistakes notebook](docs/screenshots/notebook.png) |
 
-More detail:
-- [`backend/README.md`](backend/README.md): connecting PostgreSQL or Supabase, Google sign-in, real scoring, email.
-- [`frontend/README.md`](frontend/README.md): building and hosting the website.
+### Teachers
 
-### Main settings (`backend/.env`)
+| Dashboard | Answer review | Reports |
+|---|---|---|
+| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Answer review](docs/screenshots/review.png) | ![Reports](docs/screenshots/reports.png) |
+| **AI generator** | **Questions** | **Students** |
+| ![AI generator](docs/screenshots/ai-generator.png) | ![Questions](docs/screenshots/questions.png) | ![Students](docs/screenshots/students.png) |
 
-| Setting | What it does |
-|---|---|
-| `DATABASE_URL` | Empty = SQLite. Otherwise `postgres://user:password@host:port/database` |
-| `GOOGLE_CLIENT_ID` | Turns on the Google sign-in button |
-| `EVALUATION_DEMO_MODE` | `True` = sample scores; `False` = real scoring |
-| `AI_PROVIDER`, `GROQ_API_KEY` | `groq` + a free Groq key for real scoring |
-| `GEMINI_API_KEY` | Optional free backup for the feedback (Google AI Studio key) |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | For `AI_PROVIDER=openai` (paid) instead |
-| `EMAIL_BACKEND`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Real email for invitations, password resets and reviews |
-| `REVIEW_THRESHOLD`, `SCORE_WEIGHT_*` | When answers are flagged and how the overall score is weighted |
+### Phone
 
+<<<<<<< HEAD
 ### Tests
 
 ```bash
@@ -203,6 +209,9 @@ All endpoints are under `/api/`.
 | Student | `tests/`, `attempts/`, `attempts/{id}/answers/`, `attempts/{id}/submit/`, `me/stats/` |
 | Admin | `admin/users/`, `admin/users/invite/`, `admin/tests/`, `admin/questions/`, `admin/attempts/`, `admin/attempts/{id}/review/`, `admin/dashboard/`, `admin/reports/`, `admin/reports/export/` |
 | Scoring | `evaluation/config/`, `evaluation/answers/{id}/rescore/` |
+=======
+<img src="docs/screenshots/mobile.png" alt="Student dashboard on a phone" width="260">
+>>>>>>> 776593a9bbe0e6c60ed51664fd6e6f19578a673d
 
 ---
 

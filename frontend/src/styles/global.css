@@ -811,6 +811,7 @@ audio { width: 100%; height: 40px; }
 
 /* Small phones: a tighter public navbar */
 @media (max-width: 420px) {
+  .vmt-grid > .vmt-stat-wide { grid-column: 1 / -1; }
   .vmt-navbar-inner { gap: var(--space-1); }
   .vmt-navbar-links { gap: var(--space-05); }
   .vmt-navbar-links .vmt-btn { height: var(--control-height-sm); padding: 0 10px; }
