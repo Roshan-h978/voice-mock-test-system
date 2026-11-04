@@ -75,7 +75,7 @@ export default function StudentDashboard() {
             <span className="title-sm">Choose your own password</span>
             <span className="body-sm vmt-muted">Your teacher set your current password. Change it to one only you know.</span>
           </div>
-          <Button to="/student/profile" icon={KeyRound}>
+          <Button to="/student/profile?tab=security" icon={KeyRound}>
             Change password
           </Button>
         </div>

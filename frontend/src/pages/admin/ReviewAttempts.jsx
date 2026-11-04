@@ -473,9 +473,15 @@ function ReviewDetail({ attemptId }) {
               Your review
             </h2>
             {result && (
-              <Alert tone={result.email_sent || !result.notified ? 'success' : 'warning'} onClose={() => setResult(null)}>
+              <Alert tone={result.email_sent || result.email_turned_off || !result.notified ? 'success' : 'warning'} onClose={() => setResult(null)}>
                 Review published.{' '}
-                {result.email_sent ? 'The student has been emailed.' : result.notified ? 'The email could not be sent.' : ''}
+                {result.email_sent
+                  ? 'The student has been emailed.'
+                  : result.email_turned_off
+                    ? 'The student has turned off review emails, so they will see it in their notifications instead.'
+                    : result.notified
+                      ? 'The email could not be sent.'
+                      : ''}
               </Alert>
             )}
             {error && <Alert tone="danger">{error}</Alert>}

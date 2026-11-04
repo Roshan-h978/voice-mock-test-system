@@ -139,6 +139,19 @@ New Google users become students. Someone who already has an account with the sa
 | Mistakes notebook | Every correction and tip from tests and practice, grouped, with "I've learned this" ticks |
 | Notifications | Bell in the top bar: teacher reviews and new tests (students), tests that need a review (admins) |
 
+### Profile page
+
+Students and admins share one Profile page with tabs:
+
+| Tab | What it does |
+| --- | --- |
+| Overview | Profile strength (small optional steps, each a shortcut), this week's practice days against the weekly goal, the target score against the recent average, numbers, achievements with four levels each, personal bests. Admins see their own numbers instead. |
+| Details | Profile photo (JPG, PNG or WebP; cropped to a 320 px square in the browser), name, phone, a short bio and, for students, the "email me when my test is reviewed" switch |
+| Goals (students) | What they practise for, English level, days a week and a target score |
+| Security | Change password (with a strength guide and "sign out of my other devices"), where you're signed in, Download my data (JSON) and, for students, Delete my account |
+
+Profile photos use the same storage as recordings (`STORAGE_BACKEND`). Only real JPEG, PNG and WebP files are accepted, up to `MAX_AVATAR_UPLOAD_MB` (default 2). Photo uploads and data downloads are limited by `THROTTLE_PROFILE` (default 30 an hour). Run `python manage.py migrate` after updating: migration `accounts.0004_profile_page` adds the new fields.
+
 ## Tests
 
 ```

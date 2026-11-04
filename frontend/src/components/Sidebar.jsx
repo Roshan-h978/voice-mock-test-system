@@ -1,7 +1,7 @@
 import { LogOut, X } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { initials } from '../utils/formatters';
+import Avatar from './Avatar';
 import Brand from './Brand';
 
 /**
@@ -42,9 +42,7 @@ export default function Sidebar({ items, roleLabel, homePath, onNavigate }) {
 
       {user && (
         <div className="vmt-sidebar-foot">
-          <span className="vmt-avatar vmt-avatar-sm" aria-hidden="true">
-            {initials(user.full_name)}
-          </span>
+          <Avatar user={user} size="sm" />
           <div className="vmt-person-text">
             <span className="label">{user.full_name}</span>
             <span className="caption" style={{ color: 'var(--on-navy-muted)' }}>

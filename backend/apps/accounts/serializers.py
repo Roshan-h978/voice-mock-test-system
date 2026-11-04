@@ -1,5 +1,7 @@
 """Serializers for sign-up, sign-in, profiles, password changes and invitations."""
 
+import re
+
 from django.conf import settings
 from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -30,8 +32,22 @@ def _check_password(password: str, user) -> None:
 # ---------------------------------------------------------------------------
 # Signed-in user
 # ---------------------------------------------------------------------------
+def avatar_url(user, request=None):
+    """Address of the profile photo: a signed link on S3/Supabase, /media/... on this computer, or None."""
+    if not user.avatar:
+        return None
+    try:
+        url = user.avatar.url
+    except Exception:  # noqa: BLE001 - storage misconfigured: show initials instead of failing the request
+        return None
+    return request.build_absolute_uri(url) if request and url.startswith("/") else url
+
+
 class UserSerializer(serializers.ModelSerializer):
     """The signed-in user's own account."""
+
+    avatar_url = serializers.SerializerMethodField()
+    has_password = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -42,28 +58,75 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "level",
             "phone",
+            "bio",
+            "purpose",
+            "weekly_goal",
+            "target_score",
+            "email_updates",
+            "avatar_url",
+            "has_password",
             "uses_default_password",
             "date_joined",
             "last_login",
         )
         read_only_fields = fields
 
+    def get_avatar_url(self, obj):
+        return avatar_url(obj, self.context.get("request"))
+
+    def get_has_password(self, obj):
+        return obj.has_usable_password()
+
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
+    weekly_goal = serializers.IntegerField(
+        min_value=1, max_value=7, allow_null=True, required=False,
+        error_messages={"min_value": "Choose 1 to 7 days a week.", "max_value": "Choose 1 to 7 days a week."},
+    )
+    target_score = serializers.IntegerField(
+        min_value=40, max_value=100, allow_null=True, required=False,
+        error_messages={"min_value": "Choose a target from 40 to 100.", "max_value": "Choose a target from 40 to 100."},
+    )
+
     class Meta:
         model = User
-        fields = ("full_name", "phone", "level")
+        fields = ("full_name", "phone", "level", "bio", "purpose", "weekly_goal", "target_score", "email_updates")
 
     def validate_full_name(self, value):
         return _clean_name(value)
 
     def validate_phone(self, value):
-        return value.strip()
+        value = value.strip()
+        if value and not re.fullmatch(r"[0-9+()\-. ]{6,30}", value):
+            raise serializers.ValidationError("Use digits, spaces and + ( ) - only.")
+        return value
+
+    def validate_bio(self, value):
+        return " ".join(value.split())
+
+
+class DeleteAccountSerializer(serializers.Serializer):
+    """Accounts with a password confirm with it; Google-only accounts type their email address instead."""
+
+    password = serializers.CharField(required=False, allow_blank=True, trim_whitespace=False, write_only=True)
+    confirm_email = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if user.has_usable_password():
+            if not attrs.get("password"):
+                raise serializers.ValidationError({"password": "Enter your password to confirm."})
+            if not user.check_password(attrs["password"]):
+                raise serializers.ValidationError({"password": "Your password is not correct."})
+        elif attrs.get("confirm_email", "").strip().lower() != user.email:
+            raise serializers.ValidationError({"confirm_email": "Type your email address exactly to confirm."})
+        return attrs
 
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True, trim_whitespace=False)
     new_password = serializers.CharField(write_only=True, trim_whitespace=False)
+    sign_out_others = serializers.BooleanField(required=False, default=False)
 
     def validate_current_password(self, value):
         user = self.context["request"].user
@@ -150,7 +213,7 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         attrs[self.username_field] = attrs.get(self.username_field, "").strip().lower()
         data = super().validate(attrs)
-        data["user"] = UserSerializer(self.user).data
+        data["user"] = UserSerializer(self.user, context=self.context).data
         return data
 
 
@@ -251,6 +314,7 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
     attempt_count = serializers.SerializerMethodField()
     average_score = serializers.SerializerMethodField()
     last_attempt_at = serializers.SerializerMethodField()
@@ -265,6 +329,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "role",
             "level",
             "phone",
+            "avatar_url",
             "is_active",
             "date_joined",
             "last_login",
@@ -274,6 +339,9 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "password",
         )
         read_only_fields = ("id", "email", "date_joined", "last_login")
+
+    def get_avatar_url(self, obj):
+        return avatar_url(obj, self.context.get("request"))
 
     def get_attempt_count(self, obj):
         return getattr(obj, "attempt_count", None)

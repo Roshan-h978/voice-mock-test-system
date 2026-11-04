@@ -178,7 +178,7 @@ def review_attempt(
     inbox.review_published(attempt)
 
     email_sent = False
-    if notify_student:
+    if notify_student and attempt.student.email_updates:  # students can turn review emails off on their Profile page
         try:
             email_service.send_review_published(attempt)
             email_sent = True

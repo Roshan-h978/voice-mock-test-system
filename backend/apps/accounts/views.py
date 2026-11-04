@@ -1,5 +1,6 @@
 """Authentication, profile and admin user-management endpoints."""
 
+import json
 import logging
 from datetime import timedelta
 
@@ -8,28 +9,31 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
 from django.db import transaction
 from django.db.models import Avg, Count, F, Max, Q
+from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from apps.attempts.models import FINISHED_STATUSES, Attempt
-from apps.attempts.services import delete_attempts
+from apps.attempts.models import FINISHED_STATUSES
 from apps.common.utils import ServiceError, StandardPagination, frontend_url
 from apps.notifications import email_service
 
-from . import google_auth
+from . import google_auth, profile
 from .models import AccountToken
 from .permissions import IsAdmin
+from .profile import sign_out_everywhere
 from .serializers import (
     AdminUserCreateSerializer,
     AdminUserSerializer,
     ChangePasswordSerializer,
+    DeleteAccountSerializer,
     GoogleLoginSerializer,
     InvitationCreateSerializer,
     InvitationInfoSerializer,
@@ -51,12 +55,6 @@ def tokens_for(user) -> dict:
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
 
-def sign_out_everywhere(user) -> None:
-    """Blacklist every refresh token the user holds."""
-    for token in OutstandingToken.objects.filter(user=user):
-        BlacklistedToken.objects.get_or_create(token=token)
-
-
 class AuthThrottleMixin:
     """Stricter rate limit for sign-in, sign-up and password-reset requests."""
 
@@ -76,7 +74,8 @@ class RegisterView(AuthThrottleMixin, APIView):
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
             user = serializer.save()
-        return Response({"user": UserSerializer(user).data, **tokens_for(user)}, status=status.HTTP_201_CREATED)
+        data = {"user": UserSerializer(user, context={"request": request}).data, **tokens_for(user)}
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class LoginView(AuthThrottleMixin, TokenObtainPairView):
@@ -114,7 +113,7 @@ class GoogleLoginView(AuthThrottleMixin, APIView):
             user, created = google_auth.user_for_claims(claims, serializer.validated_data.get("invite_token", ""))
         update_last_login(None, user)
         return Response(
-            {"user": UserSerializer(user).data, "created": created, **tokens_for(user)},
+            {"user": UserSerializer(user, context={"request": request}).data, "created": created, **tokens_for(user)},
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )
 
@@ -150,15 +149,87 @@ class MeView(generics.RetrieveUpdateAPIView):
         serializer = ProfileUpdateSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={"request": request}).data)
 
 
 class ChangePasswordView(APIView):
+    """Body: {current_password, new_password, sign_out_others?}. With sign_out_others, every other browser and
+    device is signed out and this one gets new tokens."""
+
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail": "Your password has been changed."})
+        with transaction.atomic():
+            user = serializer.save()
+            if not serializer.validated_data.get("sign_out_others"):
+                return Response({"detail": "Your password has been changed."})
+            sign_out_everywhere(user)
+            tokens = tokens_for(user)
+        return Response({"detail": "Your password has been changed and your other devices are signed out.", **tokens})
+
+
+class ProfileSummaryView(APIView):
+    """Everything the Profile page shows besides the account itself: profile strength, numbers, this week's
+    goal, achievements (students) and sign-ins."""
+
+    def get(self, request):
+        return Response(profile.profile_summary(request.user))
+
+
+class AvatarView(APIView):
+    """POST a profile photo (multipart field "avatar": JPEG, PNG or WebP). DELETE removes it."""
+
+    parser_classes = [MultiPartParser, FormParser]
+    throttle_scope = "profile"
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            return [*super().get_throttles(), ScopedRateThrottle()]
+        return super().get_throttles()
+
+    def post(self, request):
+        profile.save_avatar(request.user, request.FILES.get("avatar"))
+        return Response(UserSerializer(request.user, context={"request": request}).data)
+
+    def delete(self, request):
+        profile.remove_avatar(request.user)
+        return Response(UserSerializer(request.user, context={"request": request}).data)
+
+
+class SignOutOthersView(APIView):
+    """Sign out every other browser and device. This one keeps going with the new tokens in the answer."""
+
+    def post(self, request):
+        with transaction.atomic():
+            sign_out_everywhere(request.user)
+            tokens = tokens_for(request.user)
+        return Response({"detail": "Your other browsers and devices are signed out.", **tokens})
+
+
+class ExportDataView(APIView):
+    """Download my data: a JSON file with the account, results, practice answers and notifications."""
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "profile"
+
+    def get(self, request):
+        data = profile.export_data(request.user)
+        filename = f"voice-mock-test-data-{timezone.localdate():%Y-%m-%d}.json"
+        response = HttpResponse(json.dumps(data, indent=2, ensure_ascii=False), content_type="application/json; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+class DeleteAccountView(AuthThrottleMixin, APIView):
+    """A student deletes their own account. Body: {password} or, for Google-only accounts, {confirm_email}."""
+
+    def post(self, request):
+        if not request.user.is_student:
+            raise ServiceError("Admin accounts can only be removed by another admin.", status_code=403)
+        serializer = DeleteAccountSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        profile.delete_account(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +431,4 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         if instance.pk == self.request.user.pk:
             raise ServiceError("You can't delete your own account.")
-        with transaction.atomic():
-            delete_attempts(Attempt.objects.filter(student=instance))
-            instance.delete()
+        profile.delete_account(instance)

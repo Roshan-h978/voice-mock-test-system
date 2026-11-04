@@ -175,6 +175,7 @@ class AdminReviewView(APIView):
             {
                 "attempt": AdminAttemptDetailSerializer(attempt, context={"request": request}).data,
                 "email_sent": email_sent,
+                "email_turned_off": serializer.validated_data.get("notify_student", True) and not attempt.student.email_updates,
             }
         )
 

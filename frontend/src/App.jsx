@@ -14,7 +14,6 @@ import ResetPassword from './pages/common/ResetPassword';
 import AttemptHistory from './pages/student/AttemptHistory';
 import SpeakingTest from './pages/student/SpeakingTest';
 import StudentDashboard from './pages/student/StudentDashboard';
-import StudentProfile from './pages/student/StudentProfile';
 import TestInstructions from './pages/student/TestInstructions';
 import TestResult from './pages/student/TestResult';
 
@@ -32,6 +31,7 @@ const MyProgress = lazy(() => import('./pages/student/MyProgress'));
 const Notebook = lazy(() => import('./pages/student/Notebook'));
 const PracticeResult = lazy(() => import('./pages/student/PracticeResult'));
 const QuickPractice = lazy(() => import('./pages/student/QuickPractice'));
+const StudentProfile = lazy(() => import('./pages/student/StudentProfile'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();

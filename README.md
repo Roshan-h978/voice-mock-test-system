@@ -19,6 +19,7 @@ A web app for practising spoken English with timed, exam-style speaking tests. S
 - **Progress over time:** history of every test, average and best scores, strongest skill and the skill to focus on.
 - **Pick up where you left off:** leaving a test keeps the saved answers, and the student continues at the next question.
 - **Sign in with email or Google**, and reset a forgotten password by email.
+- **Interactive profile:** a profile photo (drag and drop, then move and zoom to crop), a profile-strength meter with one-click next steps, achievements with four levels each, a weekly practice goal and a target score, personal bests, a password strength guide, "sign out of other devices", "Download my data" and "Delete my account".
 
 ### For teachers (admins)
 - **Test builder:** create tests per level (beginner, intermediate, advanced), add and reorder questions with hints, set thinking and speaking time, allow or block retakes, and publish, unpublish or archive tests.
@@ -72,6 +73,8 @@ flowchart LR
 | ![Student dashboard](docs/screenshots/student-dashboard.png) | ![Speaking test](docs/screenshots/speaking-test.png) |
 | **Results** | **History** |
 | ![Results](docs/screenshots/results.png) | ![History](docs/screenshots/history.png) |
+| **Profile** | **Profile: goals and achievements** |
+| ![Profile](docs/screenshots/profile.png) | ![Profile overview](docs/screenshots/profile-overview.png) |
 
 ### Admin
 
@@ -196,6 +199,7 @@ All endpoints are under `/api/`.
 | Area | Endpoints |
 |---|---|
 | Auth | `auth/register/`, `auth/login/`, `auth/google/`, `auth/refresh/`, `auth/logout/`, `auth/me/`, `auth/password-reset/` |
+| Profile | `auth/me/` (GET, PATCH), `auth/me/password/`, `auth/me/summary/`, `auth/me/avatar/` (POST, DELETE), `auth/me/sign-out-others/`, `auth/me/export/`, `auth/me/delete/` |
 | Student | `tests/`, `attempts/`, `attempts/{id}/answers/`, `attempts/{id}/submit/`, `me/stats/` |
 | Admin | `admin/users/`, `admin/users/invite/`, `admin/tests/`, `admin/questions/`, `admin/attempts/`, `admin/attempts/{id}/review/`, `admin/dashboard/`, `admin/reports/`, `admin/reports/export/` |
 | Scoring | `evaluation/config/`, `evaluation/answers/{id}/rescore/` |

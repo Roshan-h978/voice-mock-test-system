@@ -32,7 +32,8 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Profile", {"fields": ("full_name", "phone", "role", "level")}),
+        ("Profile", {"fields": ("full_name", "phone", "role", "level", "avatar", "bio")}),
+        ("Learning goals", {"fields": ("purpose", "weekly_goal", "target_score", "email_updates")}),
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )

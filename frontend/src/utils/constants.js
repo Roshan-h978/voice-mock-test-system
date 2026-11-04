@@ -18,6 +18,17 @@ export const LEVELS = Object.freeze([
   { value: 'advanced', label: 'Advanced' },
 ]);
 
+/** What a student is practising for (Profile → Goals). Labels match the backend. */
+export const PURPOSES = Object.freeze([
+  { value: 'general', label: 'Everyday speaking' },
+  { value: 'ielts', label: 'IELTS speaking' },
+  { value: 'toefl', label: 'TOEFL speaking' },
+  { value: 'pte', label: 'PTE speaking' },
+  { value: 'interview', label: 'Job interviews' },
+  { value: 'study', label: 'Study abroad' },
+  { value: 'work', label: 'Work and business' },
+]);
+
 // tone = the StatusBadge colour: ready (teal), progress (amber), locked (grey), danger (red), navy
 export const TEST_STATUS = Object.freeze({
   draft: { label: 'Draft', tone: 'locked' },

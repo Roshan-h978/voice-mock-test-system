@@ -198,6 +198,7 @@ REST_FRAMEWORK = {
         "ai": env("THROTTLE_AI", default="30/hour"),
         "ai_admin": env("THROTTLE_AI_ADMIN", default="120/hour"),
         "practice": env("THROTTLE_PRACTICE", default="60/hour"),
+        "profile": env("THROTTLE_PROFILE", default="30/hour"),  # profile photo uploads and data downloads
     },
 }
 
@@ -237,6 +238,7 @@ ALLOW_PUBLIC_REGISTRATION = env.bool("ALLOW_PUBLIC_REGISTRATION", default=True)
 INVITE_VALID_DAYS = env.int("INVITE_VALID_DAYS", default=7)
 PASSWORD_RESET_VALID_HOURS = env.int("PASSWORD_RESET_VALID_HOURS", default=1)
 MAX_AUDIO_UPLOAD_MB = env.int("MAX_AUDIO_UPLOAD_MB", default=15)
+MAX_AVATAR_UPLOAD_MB = env.int("MAX_AVATAR_UPLOAD_MB", default=2)
 
 # ---------------------------------------------------------------------------
 # Voice Mock Test: first admin account (created by the database migration)

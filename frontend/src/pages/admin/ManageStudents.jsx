@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Copy, Mail, Pencil, Search, Trash2, UserPlus, Users } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
+import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import EmptyState from '../../components/EmptyState';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -13,7 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { createUser, deleteUser, getUsers, inviteUser, updateUser } from '../../services/adminService';
 import { getErrorMessage, getFieldErrors } from '../../services/api';
 import { LEVELS, PAGE_SIZE } from '../../utils/constants';
-import { formatDate, formatScore, initials, levelLabel } from '../../utils/formatters';
+import { formatDate, formatScore, levelLabel } from '../../utils/formatters';
 
 const ROLE_TABS = [
   { value: 'student', label: 'Students' },
@@ -342,9 +343,7 @@ export default function ManageStudents() {
                     <tr key={person.id}>
                       <td>
                         <div className="vmt-person">
-                          <span className="vmt-avatar vmt-avatar-sm" aria-hidden="true">
-                            {initials(person.full_name)}
-                          </span>
+                          <Avatar user={person} size="sm" />
                           <span className="vmt-person-text">
                             <span className="vmt-cell-main">
                               {person.full_name}

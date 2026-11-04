@@ -4,11 +4,23 @@ import { useId, useState } from 'react';
  * Labelled form field with help text and an error message.
  * as: input (default) | textarea | select. Password inputs get a Show/Hide button.
  */
-export default function TextField({ label, error, help, as = 'input', type = 'text', className = '', children, id, ...props }) {
+export default function TextField({
+  label,
+  error,
+  help,
+  as = 'input',
+  type = 'text',
+  className = '',
+  children,
+  id,
+  'aria-describedby': extraDescribedBy,
+  ...props
+}) {
   const autoId = useId();
   const fieldId = id || autoId;
   const [showPassword, setShowPassword] = useState(false);
-  const describedBy = [help && `${fieldId}-help`, error && `${fieldId}-error`].filter(Boolean).join(' ') || undefined;
+  const describedBy =
+    [help && !error && `${fieldId}-help`, error && `${fieldId}-error`, extraDescribedBy].filter(Boolean).join(' ') || undefined;
   const common = { id: fieldId, 'aria-invalid': Boolean(error) || undefined, 'aria-describedby': describedBy, ...props };
 
   let control;

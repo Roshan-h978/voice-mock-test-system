@@ -2,7 +2,7 @@ import { LayoutDashboard, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLE_HOME } from '../utils/constants';
-import { initials } from '../utils/formatters';
+import Avatar from './Avatar';
 import Brand from './Brand';
 import Button from './Button';
 import NotificationBell from './NotificationBell';
@@ -39,9 +39,7 @@ export default function Navbar({ variant = 'public', onMenuClick, profilePath, n
                 <span className="label">{user.full_name}</span>
                 <span className="caption vmt-muted">{user.email}</span>
               </span>
-              <span className="vmt-avatar" aria-hidden="true">
-                {initials(user.full_name)}
-              </span>
+              <Avatar user={user} />
             </Link>
           </div>
         )}

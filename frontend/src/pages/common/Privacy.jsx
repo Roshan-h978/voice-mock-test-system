@@ -3,7 +3,7 @@ import Footer from '../../components/Footer';
 import Navbar from '../../components/Navbar';
 import { APP_NAME } from '../../utils/constants';
 
-const UPDATED = '28 October 2026';
+const UPDATED = '4 November 2026';
 
 /** Plain-language privacy notice. Linked from the footer and the sign-in pages (and usable in Google's consent screen). */
 export default function Privacy() {
@@ -21,7 +21,7 @@ export default function Privacy() {
           <section>
             <h2 className="title-sm">What we keep</h2>
             <ul>
-              <li>Your account: name, email address, English level and, if you add it, a phone number.</li>
+              <li>Your account: name, email address, English level and, if you add them, a phone number, a profile photo, a short bio and your learning goals.</li>
               <li>Your password, stored only in a scrambled (hashed) form that nobody can read.</li>
               <li>The voice recordings you submit in speaking tests.</li>
               <li>What we work out from them: a transcript, your scores, feedback and any teacher review.</li>
@@ -63,8 +63,15 @@ export default function Privacy() {
           <section>
             <h2 className="title-sm">Your choices</h2>
             <ul>
-              <li>You can update your name, phone and password on your Profile page at any time.</li>
-              <li>You can ask the person who runs this site (your teacher or school) to delete your account and recordings.</li>
+              <li>
+                On your Profile page you can change your name, photo, phone, goals and password, turn &quot;your review is
+                ready&quot; emails off, and sign out of your other devices.
+              </li>
+              <li>Profile, then Security, then Download my data gives you a copy of your results, transcripts and feedback.</li>
+              <li>
+                Students can delete their own account there too. Results, recordings and the profile photo are removed straight
+                away. You can also ask the person who runs this site (your teacher or school) to do it.
+              </li>
               <li>Your browser keeps you signed in using its local storage. Signing out removes this.</li>
             </ul>
             <p className="body">

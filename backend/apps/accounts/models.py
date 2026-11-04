@@ -1,10 +1,19 @@
 """Users (students and admins) and one-time account links."""
 
+import secrets
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
 from apps.common.utils import generate_token, hash_token
+
+
+def avatar_upload_path(instance, filename: str) -> str:
+    """avatars/user-7/1a2b3c4d5e6f.jpg (a new name each time, so browsers never show an old photo)."""
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
+    return f"avatars/user-{instance.pk}/{secrets.token_hex(6)}.{extension}"
 
 
 class UserManager(BaseUserManager):
@@ -48,6 +57,15 @@ class User(AbstractUser):
         INTERMEDIATE = "intermediate", "Intermediate"
         ADVANCED = "advanced", "Advanced"
 
+    class Purpose(models.TextChoices):
+        GENERAL = "general", "Everyday speaking"
+        IELTS = "ielts", "IELTS speaking"
+        TOEFL = "toefl", "TOEFL speaking"
+        PTE = "pte", "PTE speaking"
+        INTERVIEW = "interview", "Job interviews"
+        STUDY = "study", "Study abroad"
+        WORK = "work", "Work and business"
+
     username = None
     first_name = None
     last_name = None
@@ -60,6 +78,26 @@ class User(AbstractUser):
     uses_default_password = models.BooleanField(
         default=False, help_text="True until the first admin changes the password set by the setup migration."
     )
+
+    # Profile page
+    avatar = models.FileField(upload_to=avatar_upload_path, max_length=255, blank=True)
+    bio = models.CharField("about me", max_length=160, blank=True)
+    purpose = models.CharField(
+        "learning for", max_length=20, choices=Purpose.choices, blank=True, help_text="Why the student is practising."
+    )
+    weekly_goal = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(7)],
+        help_text="Days a week the student plans to practise (1-7).",
+    )
+    target_score = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(40), MaxValueValidator(100)],
+        help_text="The overall score the student is aiming for.",
+    )
+    email_updates = models.BooleanField(default=True, help_text="Email the student when a teacher reviews a test.")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["full_name"]
